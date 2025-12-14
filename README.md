@@ -1,52 +1,9 @@
-from twilio.rest import Client
-import json
+button {
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
 
-# --- КОНФИГУРАЦИЯ TWILIO (Замените своими данными) ---
-ACCOUNT_SID = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' # Ваш SID аккаунта
-AUTH_TOKEN = 'your_auth_token'                 # Ваш токен авторизации
-TWILIO_PHONE_NUMBER = '+15017122661'           # Ваш номер телефона Twilio
-# ----------------------------------------------------
-
-# База данных потенциальных клиентов (лидов)
-LEAD_DATABASE = [
-    {"name": "Иванов Пётр", "phone": "+79001234567", "product": "Premium Banking"},
-    {"name": "Смирнова Елена", "phone": "+79009876543", "product": "Business Credit"},
-    {"name": "Козлов Сергей", "phone": "+79001112233", "product": "Mortgage"}
-]
-
-def make_automated_calls(leads):
-    """Инициирует звонок каждому лиду в списке."""
-    
-    try:
-        client = Client(ACCOUNT_SID, AUTH_TOKEN)
-        
-    except Exception as e:
-        print(f"❌ Ошибка инициализации Twilio клиента: {e}")
-        return
-
-    print("--- Запуск автоматического набора номера ---")
-
-    for lead in leads:
-        to_number = lead["phone"]
-        
-        try:
-            # Twilio требует URL, чтобы знать, что говорить или куда перенаправить звонок.
-            # Здесь используется TwiML Bin, который проигрывает голосовое сообщение.
-            call = client.calls.create(
-                to=to_number,
-                from_=TWILIO_PHONE_NUMBER,
-                url='http://demo.twilio.com/docs/voice.xml' # URL, который Twilio вызывает для получения инструкций
-            )
-
-            print(f"📞 Звонок инициирован: {lead['name']} ({to_number}). SID звонка: {call.sid}")
-            
-            # В реальной системе здесь бы передавался SID звонка 
-            # в CRM для отслеживания живым оператором.
-
-        except Exception as e:
-            print(f"❌ Не удалось позвонить {lead['name']}: {e}")
-
-    print("--- Набор завершен ---")
-
-# if __name__ == "__main__":
-#     make_automated_calls(LEAD_DATABASE)
+button:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
