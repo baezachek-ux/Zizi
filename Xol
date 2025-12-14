@@ -1,0 +1,71 @@
+import requests
+import json
+import time
+
+# --- КОНФИГУРАЦИЯ (Замените своими данными) ---
+ACCESS_TOKEN = "ВАШ_ДОЛГОЖИВУЩИЙ_ТОКЕН"
+INSTAGRAM_ACCOUNT_ID = "ВАШ_INSTAGRAM_BUSINESS_ID"
+IMAGE_URL = "https://example.com/images/new_product.jpg"
+CAPTION = "🔥 Новая статья о финансовых трендах! Читайте по ссылке в профиле. #банкинг #финансы"
+# ---------------------------------------------
+
+def post_instagram_image(account_id, access_token, image_url, caption):
+    """
+    Создает медиаконтейнер, затем публикует его в Instagram.
+    
+    Этапы: 
+    1. Создание контейнера (Media Container)
+    2. Ожидание готовности контейнера
+    3. Публикация контейнера
+    """
+    
+    # 1. СОЗДАНИЕ КОНТЕЙНЕРА
+    print("Этап 1: Создание медиаконтейнера...")
+    
+    creation_url = f"https://graph.facebook.com/v19.0/{account_id}/media"
+    payload = {
+        'image_url': image_url,
+        'caption': caption,
+        'access_token': access_token
+    }
+
+    try:
+        response = requests.post(creation_url, data=payload)
+        response.raise_for_status()
+        
+        container_id = response.json().get('id')
+        if not container_id:
+            raise Exception("Не удалось получить ID контейнера.")
+            
+        print(f"✅ Контейнер создан. ID: {container_id}")
+        
+        # 2. ОЖИДАНИЕ ГОТОВНОСТИ (Media Publishing Status)
+        # API требует подождать, пока контент обработается
+        print("Этап 2: Проверка статуса контейнера (ожидание 10 секунд)...")
+        time.sleep(10) # Даем время на обработку
+
+        status_url = f"https://graph.facebook.com/v19.0/{container_id}"
+        status_params = {
+            'fields': 'status_code',
+            'access_token': access_token
+        }
+        
+        while True:
+            status_response = requests.get(status_url, params=status_params)
+            status_response.raise_for_status()
+            status_code = status_response.json().get('status_code')
+            
+            if status_code == 'FINISHED':
+                print("✅ Контейнер готов к публикации.")
+                break
+            elif status_code == 'IN_PROGRESS' or status_code == 'PROCESSING':
+                print("⏳ Контейнер обрабатывается, ждем еще 5 секунд...")
+                time.sleep(5)
+            else:
+                raise Exception(f"Ошибка при обработке контейнера: {status_code}")
+
+
+        # 3. ПУБЛИКАЦИЯ
+        print("Этап 3: Публикация поста...")
+        
+        publish_url = f"https://graph.facebook.com/v19.0/{account_id}/media_publish"
